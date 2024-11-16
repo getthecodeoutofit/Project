@@ -1,3 +1,4 @@
 *.pth
 *.mp4
 /'IMAGE GENERATOR'/data/
+SCRAPER/.env
