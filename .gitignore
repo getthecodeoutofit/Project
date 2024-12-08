@@ -1,0 +1,4 @@
+IMAGE GENERATOR/data/
+*.gz
+*.mp4
+.env
