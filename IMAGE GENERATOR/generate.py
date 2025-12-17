@@ -25,72 +25,33 @@ class Config:
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.noise_dim = 100
-        self.img_size = 256
-        self.channels = 3
+        self.img_size = 28
+        self.channels = 1
         self.checkpoint_path = Path("checkpoints/latest_checkpoint.pth")
         self.output_dir = Path("generated_images")
         self.batch_size = 16
         self.output_dir.mkdir(exist_ok=True)
 
-class ResidualBlock(nn.Module):
-    """Residual Block with proper initialization"""
-    def __init__(self, in_channels: int, out_channels: int):
-        super().__init__()
-        self.conv_block = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels)
-        )
-        self.skip = (nn.Identity() if in_channels == out_channels 
-                    else nn.Conv2d(in_channels, out_channels, 1))
-        self._init_weights()
-    
-    def _init_weights(self) -> None:
-        """Initialize weights using He initialization"""
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.skip(x) + self.conv_block(x)
-
 class Generator(nn.Module):
     """Generator architecture matching the training implementation"""
     def __init__(self, config: Config):
         super().__init__()
-        self.init_size = config.img_size // 4
-        self.noise_dim = config.noise_dim
-        
-        self.fc = nn.Linear(config.noise_dim, 256 * self.init_size ** 2)
-        self.conv_blocks = nn.Sequential(
-            nn.BatchNorm2d(256),
-            nn.Upsample(scale_factor=2),
-            ResidualBlock(256, 256),
-            nn.Dropout2d(0.3),
-            nn.Upsample(scale_factor=2),
-            ResidualBlock(256, 128),
-            nn.Dropout2d(0.3),
-            nn.Conv2d(128, config.channels, 3, 1, 1),
+        self.model = nn.Sequential(
+            nn.Linear(config.noise_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, config.channels * config.img_size * config.img_size),
             nn.Tanh()
         )
-        self._init_weights()
-
-    def _init_weights(self) -> None:
-        """Initialize weights using He initialization"""
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+        self.config = config
 
     def forward(self, z: torch.Tensor) -> torch.Tensor:
-        if z.size(1) != self.noise_dim:
-            raise ValueError(f"Expected noise dimension {self.noise_dim}, got {z.size(1)}")
-        out = self.fc(z)
-        out = out.view(-1, 256, self.init_size, self.init_size)
-        return self.conv_blocks(out)
+        img = self.model(z)
+        img = img.view(img.size(0), self.config.channels, self.config.img_size, self.config.img_size)
+        return img
 
 class ImageGenerator:
     """Class to handle image generation and visualization"""
@@ -143,7 +104,7 @@ class ImageGenerator:
             filepath = self.config.output_dir / filename
             
             plt.figure(figsize=(10, 10))
-            plt.imshow(grid_img)
+            plt.imshow(grid_img, cmap='gray')
             plt.axis('off')
             plt.savefig(filepath, bbox_inches='tight', pad_inches=0)
             plt.close()
