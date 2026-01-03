@@ -10,3 +10,15 @@
 2025-11-07 19:00:32,018 - INFO - Saved image grid to generated_images/generated_grid_20251107_190031.png
 2025-11-07 19:00:32,018 - INFO - Image generation completed successfully
 2025-11-07 19:00:32,018 - INFO - Cleanup completed
+2025-12-23 21:14:49,427 - INFO - CUDA is available. Using GPU.
+2025-12-23 21:14:49,669 - INFO - Generator loaded successfully on cuda
+2025-12-23 21:14:49,669 - INFO - Generating images...
+2025-12-23 21:14:50,173 - INFO - Saved image grid to generated_images/generated_grid_20251223_211449.png
+2025-12-23 21:14:50,173 - INFO - Image generation completed successfully
+2025-12-23 21:14:50,173 - INFO - Cleanup completed
+2025-12-23 21:15:13,408 - INFO - CUDA is available. Using GPU.
+2025-12-23 21:15:13,548 - INFO - Generator loaded successfully on cuda
+2025-12-23 21:15:13,548 - INFO - Generating images...
+2025-12-23 21:15:13,727 - INFO - Saved image grid to generated_images/generated_grid_20251223_211513.png
+2025-12-23 21:15:13,727 - INFO - Image generation completed successfully
+2025-12-23 21:15:13,727 - INFO - Cleanup completed
